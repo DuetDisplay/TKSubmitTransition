@@ -28,6 +28,8 @@ open class TKTransitionSubmitButton : UIButton, UIViewControllerTransitioningDel
 		}
     }
 
+	var isInOriginalState: Bool = true
+	
     var cachedTitle: String?
 
     public override init(frame: CGRect) {
@@ -39,13 +41,14 @@ open class TKTransitionSubmitButton : UIButton, UIViewControllerTransitioningDel
         super.init(coder: aDecoder)!
         self.setup()
     }
-
+	
     func setup() {
         self.clipsToBounds = true
         spiner.spinnerColor = spinnerColor
     }
 
     open func startLoadingAnimation() {
+		isInOriginalState = false
 		self.cachedTitle = title(for: UIControl.State())
 		self.setTitle("", for: UIControl.State())
         UIView.animate(withDuration: 0.1, animations: { () -> Void in
@@ -60,6 +63,7 @@ open class TKTransitionSubmitButton : UIButton, UIViewControllerTransitioningDel
     }
 
     open func startFinishAnimation(_ delay: TimeInterval,_ animation: CAMediaTimingFunction? = nil, completion:(()->())?) {
+		isInOriginalState = false
         Timer.schedule(delay: delay) { timer in
             self.didEndFinishAnimation = completion
             self.expand(animation)
@@ -88,11 +92,13 @@ open class TKTransitionSubmitButton : UIButton, UIViewControllerTransitioningDel
     }
     
     open func returnToOriginalState() {
-        
-        self.layer.removeAllAnimations()
-		self.setTitle(self.cachedTitle, for: UIControl.State())
-        self.spiner.stopAnimation()
-		self.layer.cornerRadius = CGFloat(self.normalCornerRadius.doubleValue)
+		if !isInOriginalState {
+			self.layer.removeAllAnimations()
+			self.setTitle(self.cachedTitle, for: UIControl.State())
+			self.spiner.stopAnimation()
+			self.layer.cornerRadius = CGFloat(self.normalCornerRadius.doubleValue)
+			isInOriginalState = true
+		}
     }
     
     func shrink() {
